@@ -21,7 +21,7 @@ angular.module('starter', ['ionic', 'ngMockE2E'])
       StatusBar.styleDefault();
     }
   });
-}).config(function ($stateProvider, $urlRouterProvider, USER_ROLES) {
+}).config(function ($stateProvider, $urlRouterProvider) {
   $stateProvider
   .state('login', {
     url: '/login',
@@ -56,9 +56,6 @@ angular.module('starter', ['ionic', 'ngMockE2E'])
         'admin-tab': {
           templateUrl: 'templates/admin.html'
         }
-    },
-    data: {
-      authorizedRoles: [USER_ROLES.admin]
     }
   });
   

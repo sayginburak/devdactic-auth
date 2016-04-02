@@ -1,10 +1,10 @@
 angular.module('starter')
  
-.service('AuthService', function($q, $http, USER_ROLES) {
-  var LOCAL_TOKEN_KEY = 'yourTokenKey';
+.service('AuthService', function($q, $http) {
+  var LOCAL_TOKEN_KEY = 'authToken';
   var username = '';
   var isAuthenticated = false;
-  var role = '';
+  // var role = '';
   var authToken;
  
   function loadUserCredentials() {
@@ -23,13 +23,6 @@ angular.module('starter')
     username = token.split('.')[0];
     isAuthenticated = true;
     authToken = token;
- 
-    if (username == 'admin') {
-      role = USER_ROLES.admin
-    }
-    if (username == 'user') {
-      role = USER_ROLES.public
-    }
  
     // Set the token as header for your requests!
     $http.defaults.headers.common['X-Auth-Token'] = token;
@@ -73,8 +66,8 @@ angular.module('starter')
     logout: logout,
     isAuthorized: isAuthorized,
     isAuthenticated: function() {return isAuthenticated;},
-    username: function() {return username;},
-    role: function() {return role;}
+    username: function() {return username;}
+    // role: function() {return role;}
   };
 })
 
