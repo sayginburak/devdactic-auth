@@ -1,59 +1,82 @@
-angular.module('starter')
+angular.module('starter.services', ['starter.controllers','ngOpenFB', 'ionic.utils'])
  
-.service('AuthService', function($q, $http, USER_ROLES) {
-  var LOCAL_TOKEN_KEY = 'yourTokenKey';
+.service('AuthService', function($q, $http, ngFB, $localstorage) {
+  var LOCAL_TOKEN_KEY = 'authToken';
   var username = '';
   var isAuthenticated = false;
-  var role = '';
+  // var role = '';
   var authToken;
+  var access_token;
+  var gender;
+  var profile_pic;
+  var name;
+  var base_url = "http://localhost:3000/api/v1"
  
   function loadUserCredentials() {
-    var token = window.localStorage.getItem(LOCAL_TOKEN_KEY);
+    var token = $localstorage.getObject('userInfo').auth_token;
     if (token) {
-      useCredentials(token);
+      useCredentials();
     }
   }
  
-  function storeUserCredentials(token) {
-    window.localStorage.setItem(LOCAL_TOKEN_KEY, token);
-    useCredentials(token);
+  function storeUserCredentials(data) {
+    $localstorage.setObject('userInfo', data)
+    useCredentials();
   }
  
-  function useCredentials(token) {
-    username = token.split('.')[0];
+  function useCredentials() {
+    userInfo = $localstorage.getObject('userInfo');
+    username = userInfo.email;
+    name = userInfo.name;
+    gender = userInfo.gender;
+    profile_pic = userInfo.profile_picture;
     isAuthenticated = true;
-    authToken = token;
- 
-    if (username == 'admin') {
-      role = USER_ROLES.admin
-    }
-    if (username == 'user') {
-      role = USER_ROLES.public
-    }
+    authToken = userInfo.auth_token;
  
     // Set the token as header for your requests!
-    $http.defaults.headers.common['X-Auth-Token'] = token;
+    $http.defaults.headers.common['X-Auth-Token'] = authToken;
   }
  
   function destroyUserCredentials() {
     authToken = undefined;
     username = '';
     isAuthenticated = false;
+    name = '';
+    gender = '';
+    profile_picture = '';
     $http.defaults.headers.common['X-Auth-Token'] = undefined;
-    window.localStorage.removeItem(LOCAL_TOKEN_KEY);
+    $localstorage.setObject('userInfo', undefined)
   }
  
-  var login = function(name, pw) {
+  var login = function() {
     return $q(function(resolve, reject) {
-      if ((name == 'admin' && pw == '1') || (name == 'user' && pw == '1')) {
-        // Make a request and receive your auth token from your server
-        storeUserCredentials(name + '.yourServerToken');
-        resolve('Login success.');
-      } else {
-        reject('Login Failed.');
-      }
+      fbLogin().then(function() {
+        url = base_url + "/users"
+        data = {access_token:access_token}
+        $http.post(url, data).then(function(response) {
+          console.log(response.data)
+          storeUserCredentials(response.data);
+          resolve();
+        })
+      }, function() {
+        reject();
+      });
     });
   };
+
+  var fbLogin = function () {
+    deferred = $q.defer();
+    ngFB.login({scope: 'email,public_profile'}).then(
+        function (response) {
+            if (response.status === 'connected') {
+                access_token = response.authResponse.accessToken;
+                deferred.resolve();
+            } else {
+                deferred.reject();
+            }
+        });
+    return deferred.promise;
+};
  
   var logout = function() {
     destroyUserCredentials();
@@ -74,7 +97,10 @@ angular.module('starter')
     isAuthorized: isAuthorized,
     isAuthenticated: function() {return isAuthenticated;},
     username: function() {return username;},
-    role: function() {return role;}
+    name: function() {return name;},
+    gender: function() {return gender;},
+    profile_pic: function() {return profile_pic;}
+    // role: function() {return role;}
   };
 })
 

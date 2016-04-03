@@ -1,6 +1,6 @@
-angular.module('starter')
+angular.module('starter.controllers', ['starter.services','ngOpenFB'])
  
-.controller('AppCtrl', function($scope, $state, $ionicPopup, AuthService, AUTH_EVENTS) {
+.controller('AppCtrl', function($scope, $state, $ionicPopup, AuthService, AUTH_EVENTS, ngFB) {
   $scope.username = AuthService.username();
  
   $scope.$on(AUTH_EVENTS.notAuthorized, function(event) {
@@ -23,13 +23,12 @@ angular.module('starter')
     $scope.username = name;
   };
 })
-.controller('LoginCtrl', function($scope, $state, $ionicPopup, AuthService) {
+.controller('LoginCtrl', function($scope, $state, $ionicPopup, AuthService, ngFB) {
   $scope.data = {};
  
   $scope.login = function(data) {
-    AuthService.login(data.username, data.password).then(function(authenticated) {
+    AuthService.login().then(function(authenticated) {
       $state.go('main.dash', {}, {reload: true});
-      $scope.setCurrentUsername(data.username);
     }, function(err) {
       var alertPopup = $ionicPopup.alert({
         title: 'Login failed!',
@@ -38,34 +37,9 @@ angular.module('starter')
     });
   };
 })
-.controller('DashCtrl', function($scope, $state, $http, $ionicPopup, AuthService) {
+.controller('DashCtrl', function($scope, $state, $http, $ionicPopup, AuthService, ngFB) {
   $scope.logout = function() {
     AuthService.logout();
     $state.go('login');
-  };
- 
-  $scope.performValidRequest = function() {
-    $http.get('http://localhost:8100/valid').then(
-      function(result) {
-        $scope.response = result;
-      });
-  };
- 
-  $scope.performUnauthorizedRequest = function() {
-    $http.get('http://localhost:8100/notauthorized').then(
-      function(result) {
-        // No result here..
-      }, function(err) {
-        $scope.response = err;
-      });
-  };
- 
-  $scope.performInvalidRequest = function() {
-    $http.get('http://localhost:8100/notauthenticated').then(
-      function(result) {
-        // No result here..
-      }, function(err) {
-        $scope.response = err;
-      });
   };
 });

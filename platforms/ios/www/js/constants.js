@@ -5,7 +5,7 @@ angular.module('starter')
   notAuthorized: 'auth-not-authorized'
 })
  
-.constant('USER_ROLES', {
-  admin: 'admin_role',
-  public: 'public_role'
-});
+// .constant('USER_ROLES', {
+//   admin: 'admin_role',
+//   public: 'public_role'
+// });
